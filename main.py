@@ -2,7 +2,7 @@ from http import client
 from sqlalchemy import or_
 from fastapi import FastAPI, HTTPException,Request,Depends
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse,FileResponse
 import requests
 from sqlalchemy import null
 
@@ -249,8 +249,10 @@ async def signup(request: Request, db: Session = Depends(get_db)):
 async def registeration(request:Request,db:Session=Depends(get_db)):
     try:
         data=await request.form()
+        print(data)
         regno=data.get('regno')
         name=data.get('name')
+        annual_income=data.get('incomeRange')
         department=data.get('department')
         email=data.get('email')
         phone_Number=data.get('phone_Number')
@@ -371,6 +373,7 @@ async def registeration(request:Request,db:Session=Depends(get_db)):
                     Aadhar_No=Aadhar_No,
                     Gender=Gender,
                     DOB=DOB,
+                    annual_income=annual_income,
                     tutor_name=tutor_name,
                     personal_Email=personal_Email,
                     caste=caste,
@@ -600,6 +603,7 @@ async def updateStudentStatus(id: int, status: str, request: Request, db: Sessio
                             name=user.name,
                             department=user.department,
                             email=user.email,
+                            annual_income=user.annual_income,
                             phone_Number=user.phone_Number,
                             pan_No=user.pan_No,
                             Aadhar_No=user.Aadhar_No,
@@ -707,6 +711,17 @@ async def getPlacedData(request: Request, db: Session = Depends(get_db), current
             if data:
                 placed_student = db.query(models.Placeddata).filter(models.Placeddata.department==data.department).filter(models.Placeddata.status=='ACTIVE').all()
                 if placed_student:
+                    # declaration_file="f./declaration/{Placeddata.declaration}"
+                    # feedback_file="f./declaration/{Placeddata.feedback}"
+                    # offerletter_file="f./declaration/{Placeddata.offerletter}"
+                    # internletter_file="f./declaration/{Placeddata.internletter}"
+
+                    # for student in placed_student:
+                    #         student.declaration_file = f"./declaration/{student.declaration}"
+                    #         student.feedback_file = f"./feedback/{student.feedback}"
+                    #         student.offerletter_file = f"./offerletter/{student.offerletter}"
+                    #         student.internletter_file = f"./internletter/{student.internletter}"
+
                     placed_student=jsonable_encoder(placed_student)
                     return JSONResponse(content={"data": placed_student}, status_code=200)
                 else:
@@ -717,6 +732,7 @@ async def getPlacedData(request: Request, db: Session = Depends(get_db), current
             return JSONResponse(content={"error": "User does not have the privilege"}, status_code=400)
 
     except HTTPException as e:
+        print(e)
         return JSONResponse(content={"error": e.detail}, status_code=e.status_code)
 
     except Exception as e:
@@ -724,6 +740,32 @@ async def getPlacedData(request: Request, db: Session = Depends(get_db), current
         return JSONResponse(content={"error": "Internal Server Error"}, status_code=500)
 
 
+@app.get('/download/{file_type}/{file_name}')
+async def get_file(file_type: str, file_name: str):
+    try:
+        if file_type == "declaration":
+            file_path = f"./declaration/{file_name}"
+        elif file_type == "offerletter":
+            file_path = f"./offerletter/{file_name}"
+        elif file_type == "internletter":
+            file_path = f"./internletter/{file_name}"
+        elif file_type == "feedback":
+            file_path = f"./feedback/{file_name}"
+        else:
+            return JSONResponse(content={"error": "Invalid file type"}, status_code=400)
+        if os.path.exists(file_path):
+            return FileResponse(file_path)
+        else:
+            return JSONResponse(content={"error": "File not found"}, status_code=404)
+    
+    except HTTPException as e:
+        print(e)
+        return JSONResponse(content={"error": e.detail}, status_code=e.status_code)
+
+    except Exception as e:
+        print(e)
+        return JSONResponse(content={"error": "Internal Server Error"}, status_code=500)
+        
 
 @app.post('/hrData')
 async def getHRData(request: Request, db : Session = Depends(get_db), current_user: str = Depends(get_current_user)):
@@ -739,11 +781,10 @@ async def getHRData(request: Request, db : Session = Depends(get_db), current_us
                 existing_mail = db.query(models.HRData).filter(models.HRData.email==email).filter(models.HRData.status=="ACTIVE").first()
                 if not existing_mail:
                     name = data.get('name')
-                    c_name = data.get('c_name')
+                    c_name = data.get('company_name')
                     phoneno = data.get('phoneno')
                     core = data.get('core')
-                    Location=data.get("Location")
-                    new_user = models.HRData(name = name, email=email,Location=Location,company_name = c_name, phoneno = phoneno,core = core,status="ACTIVE")
+                    new_user = models.HRData(name = name, email=email, company_name = c_name, phoneno = phoneno,core = core,status="ACTIVE")
                     db.add(new_user)
                     db.commit()
                     return JSONResponse(content={"message": "Signup successful","profile":"HR"}, status_code=200)
@@ -757,7 +798,6 @@ async def getHRData(request: Request, db : Session = Depends(get_db), current_us
         return JSONResponse(content={"error": e.detail}, status_code=e.status_code)
     
     except Exception as e:
-        print(e)
         return JSONResponse(content={"error": "Internal Server Error"}, status_code=500)
          
 
@@ -771,7 +811,6 @@ async def getHRData(request: Request, db : Session = Depends(get_db), current_us
             else:
                 existing_mail = db.query(models.HRData).filter(models.HRData.status=="ACTIVE").all()
                 if existing_mail:
-                    existing_mail=jsonable_encoder(existing_mail)
                     return JSONResponse(content={"Hr Data": existing_mail}, status_code=200)
                 else:
                     return JSONResponse(content={"error":"No Data Found"}, status_code=200)
@@ -783,7 +822,6 @@ async def getHRData(request: Request, db : Session = Depends(get_db), current_us
         return JSONResponse(content={"error": e.detail}, status_code=e.status_code)
     
     except Exception as e:
-        print(e)
         return JSONResponse(content={"error": "Internal Server Error"}, status_code=500)
 
 
@@ -792,6 +830,7 @@ async def updateHRData(id: int, request: Request, db : Session = Depends(get_db)
     try:
 
         data = await request.json()
+        
         user = db.query(models.HRData).filter(models.HRData.id == id).filter(models.HRData.status=="ACTIVE").first()
         print(user)
         if user:
@@ -799,12 +838,10 @@ async def updateHRData(id: int, request: Request, db : Session = Depends(get_db)
                  return JSONResponse(content={"error": "Email cannot be changed"}, status_code=400)
             
             else:
-                print(data)
                 user.name = data.get('name') if 'name' in data else user.name
                 user.phoneno = data.get('phoneno') if 'phoneno' in data else user.phoneno
                 user.core = data.get('core') if 'core' in data else user.core
                 user.company_name = data.get('company_name') if 'company_name' in data else user.company_name
-                user.Location = data.get('Location') if 'Location' in data else user.Location
                 db.commit()
                 return JSONResponse(content={"message": "Update Successful"}, status_code=200)
 
@@ -854,7 +891,7 @@ async def login(request:Request,db:Session=Depends(get_db)):
                     )
                     return JSONResponse(content={"bearer": access_token,"Profile":"Master"},status_code=200)
                 else:
-                    return JSONResponse(content={"Error":"Create your account first"},status_code=403)
+                    return JSONResponse(content={"Error":"Redirect to registeration page"},status_code=403)
 
 
 
@@ -875,11 +912,10 @@ async def login(request:Request,db:Session=Depends(get_db)):
             
             
             elif not any(char.isdigit() for char in email):
-                body=db.query(models.Staff_signup).filter(models.Staff_signup.email==email).filter(models.Staff_signup.password==password).filter(models.Placement_signup.status=="Active").first()
-                user_data=db.query()
+                body=db.query(models.Staff_signup).filter(models.Staff_signup.email==email).filter(models.Staff_signup.password==password).filter(models.Staff_signup.status=="Active").first()
                 if body:
                     user_data=db.query(models.staff_coordinator).filter(models.staff_coordinator.email==email).filter(models.staff_coordinator.status=="Active").first()
-                    # print(user_data)
+                    print(user_data)
                     if user_data:
                         access_token_expires = timedelta(hours=1)
                         access_token = create_access_token(
@@ -1174,7 +1210,7 @@ async def studentdata(request: Request, db: Session = Depends(get_db), current_u
                 if checkPriority=="view":
                    return JSONResponse(content={"Error":"Account does not have the privilege"},status_code=400)
                 else:
-                    student_data = db.query(models.Registeration).filter(models.Registeration.placement_status=="").filter(models.Registeration.status == "Active").all()
+                    student_data = db.query(models.Registeration).filter(models.Registeration.placement_status=="Willing").filter(models.Registeration.status == "Active").all()
                     if student_data:    
                         student_data=jsonable_encoder(student_data)
                         return JSONResponse(content={"Student Datas":student_data},status_code=200)
@@ -1184,7 +1220,7 @@ async def studentdata(request: Request, db: Session = Depends(get_db), current_u
         elif 'placement' in current_user.lower():    
                 data=db.query(models.placement_coordinator).filter(models.placement_coordinator.email==current_user).filter(models.placement_coordinator.status=="ACTIVE").first()
                 if data:
-                    student_data = db.query(models.Registeration).filter(models.Registeration.placement_status=="").filter(models.Registeration.status == "Active").all()
+                    student_data = db.query(models.Registeration).filter(models.Registeration.placement_status=="Willing").filter(models.Registeration.status == "Active").all()
                     student_data=jsonable_encoder(student_data)
                     return JSONResponse(content={"Student Datas":student_data},status_code=200)
                 else:
@@ -1284,7 +1320,9 @@ async def getprofile(request:Request,db:Session=Depends(get_db),current_user:str
                 body=db.query(models.Signup).filter(models.Signup.email==current_user).filter(models.Signup.status=="Active").first()
                 if body:
                     user_data=db.query(models.Registeration).filter(models.Registeration.email==current_user).filter(models.Registeration.status=="Active").first()
+                    user_data=jsonable_encoder(user_data)
                     company_info=db.query(models.Placementinfo).filter(models.Placementinfo.status=="Active").all()
+                    company_info=jsonable_encoder(company_info)
                     # programmingportals=db.query(models.ProgrammingPortals).filter(models.ProgrammingPortals.status=="Active").all()
                     # 'programmingportals':programmingportals
                     return JSONResponse(content={'user_data':user_data,'company_info':company_info},status_code=200)
@@ -1292,9 +1330,11 @@ async def getprofile(request:Request,db:Session=Depends(get_db),current_user:str
                     return JSONResponse(content={"error":"No data Found"},status_code=403)
     
     except HTTPException as e:
+        print(e)
         return JSONResponse(content={"error": e.detail}, status_code=e.status_code)
     
     except Exception as e:
+        print(e)
         return JSONResponse(content={"error": "Internal Server Error"}, status_code=500)
 
 
@@ -1614,17 +1654,106 @@ async def getuserplacedData(request:Request,db:Session=Depends(get_db),current_u
 
 
 
+
+@app.post('/adminplaceddata')
+async def placeddata(request: Request, db: Session = Depends(get_db), current_user: str = Depends(get_current_user)):
+    try:
+        data = await request.form()
+        print(data)
+        email = data.get('email')
+        
+        # Check if all required fields are present in the form data
+        required_fields = ['email', 'Name', 'Department', 'Phone', 'DOB', 'address', 'companyname', 'modeofhiring', 'type', 'package', 'location']
+        for field in required_fields:
+            if field not in data:
+                return JSONResponse(content={"error": f"Field '{field}' is missing in the form data"}, status_code=400)
+        
+        # Retrieve other form data fields
+        name = data.get('Name')
+        department = data.get('Department')
+        phoneno = data.get('Phone')
+        dob = data.get('DOB')  # Corrected field name
+        type = data.get('type')
+        address = data.get('address')
+        companyname = data.get('companyname')
+        modeofhiring = data.get('modeofhiring')
+        package = data.get('package')
+        location = data.get('location')
+
+        # Retrieve file objects
+        declaration_file = data.get('Declaration')
+        feedback_file = data.get('Feedback')
+        internletter_file = data.get('internletter')
+        offerletter_file = data.get('Offerletter')
+
+        # Check if all required files are present
+        if all(file is not None for file in [declaration_file, feedback_file, internletter_file, offerletter_file]):
+            # Generate unique filenames for uploaded files
+            token_declaration = str(uuid.uuid4()) + '.docx'
+            token_feedback = str(uuid.uuid4()) + '.docx'
+            token_internletter = str(uuid.uuid4()) + '.docx'
+            token_offerletter = str(uuid.uuid4()) + '.docx'
+
+            # Define upload folder paths
+            upload_folder = "./uploads"
+            upload_declaration_folder = os.path.join(upload_folder, "declaration")
+            upload_feedback_folder = os.path.join(upload_folder, "feedback")
+            upload_internletter_folder = os.path.join(upload_folder, "internletter")
+            upload_offerletter_folder = os.path.join(upload_folder, "offerletter")
+
+            # Create upload folders if they don't exist
+            os.makedirs(upload_folder, exist_ok=True)
+            os.makedirs(upload_declaration_folder, exist_ok=True)
+            os.makedirs(upload_feedback_folder, exist_ok=True)
+            os.makedirs(upload_internletter_folder, exist_ok=True)
+            os.makedirs(upload_offerletter_folder, exist_ok=True)
+
+            # Save uploaded files
+            declaration_path = os.path.join(upload_declaration_folder, token_declaration)
+            feedback_path = os.path.join(upload_feedback_folder, token_feedback)
+            internletter_path = os.path.join(upload_internletter_folder, token_internletter)
+            offerletter_path = os.path.join(upload_offerletter_folder, token_offerletter)
+
+            with open(declaration_path, 'wb') as file:
+                shutil.copyfileobj(declaration_file.file, file)
+            with open(feedback_path, 'wb') as file:
+                shutil.copyfileobj(feedback_file.file, file)
+            with open(internletter_path, 'wb') as file:
+                shutil.copyfileobj(internletter_file.file, file)
+            with open(offerletter_path, 'wb') as file:
+                shutil.copyfileobj(offerletter_file.file, file)
+
+            # Save data to the database
+            placeddata=models.Placeddata(email=email,name=name,type=type,department=department,phoneno=phoneno,dob=dob,address=address,companyname=companyname,modeofhiring=modeofhiring,package=package,location=location,declaration=token_declaration,offerletter=token_offerletter,internletter=token_internletter,feedback=token_feedback,created_by=current_user,status="Active")
+            db.query(models.Registeration).filter(models.Registeration.email == email).filter(models.Registeration.status=="Active").update({"placement_status": "Placed"})
+            db.add(placeddata)
+            db.commit()
+                
+            return JSONResponse(content={"message": "Data submitted successfully"}, status_code=200)
+        else:
+            return JSONResponse(content={"error": "One or more files are missing in the form data"}, status_code=400)
+
+    except HTTPException as e:
+        print(e)
+        return JSONResponse(content={"error": e.detail}, status_code=e.status_code)
+    
+    except Exception as e:
+        print(e)
+        return JSONResponse(content={"error": "Internal Server Error"}, status_code=500)
+
+
+
 # placed data stored route
     
 @app.post('/placeddata')
 async def placeddata(request:Request,db:Session=Depends(get_db),current_user:str=Depends(get_current_user)):
     try:
        data=await request.form()
+       print(data)
        email=data.get('email')
        content_type=request.headers.get('content_type')
        body=db.query(models.Registeration).filter(models.Registeration.email==email).filter(models.Registeration.status=="Active").first()
        if body:
-            email=data.get('email')
             name=data.get('name')
             department=data.get('department')
             phoneno=data.get('phoneno')
@@ -1635,6 +1764,7 @@ async def placeddata(request:Request,db:Session=Depends(get_db),current_user:str
             package=data.get('package')
             location=data.get('location')
             # Files
+            type=data.get('type')
             declaration=data.get('declaration')
             declaration_name=data.get('declaration_name')
             offerletter=data.get('offerletter')
@@ -1677,7 +1807,7 @@ async def placeddata(request:Request,db:Session=Depends(get_db),current_user:str
                 with open(file_location4, 'wb+') as file_object:
                             shutil.copyfileobj(feedback.file, file_object)
 
-                placeddata=models.Placeddata(email=email,name=name,department=department,phoneno=phoneno,dob=dob,address=address,companyname=companyname,modeofhiring=modeofhiring,package=package,location=location,declaration=token_image1,offerletter=token_image2,internletter=token_image3,feedback=token_image4,created_by=current_user,status="Active")
+                placeddata=models.Placeddata(email=email,name=name,type=type,department=department,phoneno=phoneno,dob=dob,address=address,companyname=companyname,modeofhiring=modeofhiring,package=package,location=location,declaration=token_image1,offerletter=token_image2,internletter=token_image3,feedback=token_image4,created_by=current_user,status="Active")
                 db.query(models.Registeration).filter(models.Registeration.email == email).filter(models.Registeration.status=="Active").update({"placement_status": "Placed"})
                 db.add(placeddata)
                 db.commit()
@@ -1776,7 +1906,7 @@ async def get_company_details(request:Request, db: Session = Depends(get_db), cu
     
 # Show companies round details
 
-@app.get('/get_company_details/{id}')
+@app.get('/get_company_list/{id}')
 async def get_company_details(id :int,request:Request,db:Session=Depends(get_db),current_user:str=Depends(decode_token)):
     try:
         company_data = db.query(models.Placementinfo).filter(models.Placementinfo.id == id ).all()
@@ -1789,6 +1919,23 @@ async def get_company_details(id :int,request:Request,db:Session=Depends(get_db)
     except Exception as e:
         return JSONResponse(content={"error": "Internal Server Error"}, status_code=500)
     
+
+@app.get('/get_passed_students/{id}')
+async def get_passed_students(id: int, request: Request, db: Session = Depends(get_db), current_user: str = Depends(decode_token)):
+    try:
+        company_data = db.query(models.RoundCompletionData).filter(models.RoundCompletionData.company_id == id,models.RoundCompletionData.round_status == "Passed").all()
+        student_ids = [data.student_id for data in company_data]
+        students = db.query(models.Registeration).filter(models.Registeration.id.in_(student_ids)).all()
+        students_data = [{"name": student.name,"department": student.department,"email": student.email,"phone_Number": student.phone_Number,"regno": student.regno} for student in students]
+        return JSONResponse(content={"students_data": students_data},status_code=200) 
+    
+    except HTTPException as e:
+        return JSONResponse(content={"error": e.detail}, status_code=e.status_code)
+    
+    except Exception as e:
+        return JSONResponse(content={"error": "Internal Server Error"}, status_code=500)
+
+
 # Show passes students data in a  round
     
 @app.get('/get_passed_students/{id}/{round_name}')

@@ -1,9 +1,7 @@
 from sqlalchemy.schema import Column
 from sqlalchemy.types import String, Integer
 from database import base,db_engine
-from datetime import datetime
-from datetime import datetime, timedelta
-from sqlalchemy import Boolean, Column, ForeignKey,  String, DateTime, LargeBinary,func
+from sqlalchemy import Boolean, Column, ForeignKey,  String, TIMESTAMP, LargeBinary,func
 
 
 class Signup_Otp(base):
@@ -14,8 +12,8 @@ class Signup_Otp(base):
     otp=Column(Integer,nullable=False,index=True)
     # common for all the tables
     status = Column(String(255), nullable=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    expiration_time = Column(DateTime, nullable=False,index=True) 
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    expiration_time = Column(TIMESTAMP, nullable=False,index=True) 
 
 
 
@@ -27,8 +25,8 @@ class Signup(base):
     profile=Column(String(255),nullable=False,index=True)
     # common for all the tables
     status = Column(String(255), nullable=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, onupdate=func.now())
 
 
 class Placement_signup(base):
@@ -39,8 +37,8 @@ class Placement_signup(base):
     profile=Column(String(255),nullable=False,index=True)
     # common for all the tables
     status = Column(String(255), nullable=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, onupdate=func.now())
 
 
 class parentSignup(base):
@@ -53,8 +51,8 @@ class parentSignup(base):
 
     # common for all the tables
     status = Column(String(255), nullable=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, onupdate=func.now())
 
 
 
@@ -67,8 +65,8 @@ class HOD(base):
     profile=Column(String(255),nullable=False,index=True)
     # common for all the tables
     status = Column(String(255), nullable=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, onupdate=func.now())
 
 
 class Master(base):
@@ -81,8 +79,8 @@ class Master(base):
 
     # common for all the tables
     status = Column(String(255), nullable=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, onupdate=func.now())
 
 
 
@@ -94,8 +92,8 @@ class Staff_signup(base):
         profile=Column(String(255),nullable=False,index=True)
         # common for all the tables
         status = Column(String(255), nullable=False, index=True)
-        created_at = Column(DateTime, server_default=func.now())
-        updated_at = Column(DateTime, onupdate=func.now())
+        created_at = Column(TIMESTAMP, server_default=func.now())
+        updated_at = Column(TIMESTAMP, onupdate=func.now())
 
 class Registeration(base):
     __tablename__="registeration"
@@ -111,6 +109,7 @@ class Registeration(base):
     DOB=Column(String(255), nullable=False, index=True)
     personal_Email=Column(String(255), nullable=True, index=True)
     caste=Column(String(255), nullable=False, index=True)
+    annual_income=Column(String(255), nullable=False, index=True)
     religion=Column(String(255), nullable=False, index=True)
     marital_Status=Column(String(255), nullable=False, index=True)
     Father_Name=Column(String(255), nullable=False, index=True)
@@ -155,8 +154,8 @@ class Registeration(base):
     # common for all the tables
     status = Column(String(255), nullable=False, index=True)
     approvedby=Column(String(255), nullable=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, onupdate=func.now())
 
 class ApprovalRegisteration(base):
     __tablename__="ApprovalRegisteration"
@@ -168,6 +167,7 @@ class ApprovalRegisteration(base):
     phone_Number=Column(String(255), nullable=False, index=True)
     pan_No=Column(String(255), nullable=False, index=True)
     Aadhar_No=Column(String(255), nullable=False, index=True)
+    annual_income=Column(String(255), nullable=False, index=True)
     Gender=Column(String(255), nullable=False, index=True)
     DOB=Column(String(255), nullable=False, index=True)
     personal_Email=Column(String(255), nullable=True, index=True)
@@ -214,8 +214,8 @@ class ApprovalRegisteration(base):
     placement_status=Column(String(255), nullable=True, index=True)
     # common for all the tables
     status = Column(String(255), nullable=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, onupdate=func.now())
 
 class placement_coordinator(base):
     __tablename__="placement_coordinator"
@@ -229,8 +229,8 @@ class placement_coordinator(base):
 
     # common for all the tables
     status = Column(String(255), nullable=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now()) 
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, onupdate=func.now()) 
 
 class staff_coordinator(base):
     __tablename__="staff_coordinator"
@@ -244,8 +244,8 @@ class staff_coordinator(base):
 
     # common for all the tables
     status = Column(String(255), nullable=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now()) 
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, onupdate=func.now()) 
 
 # class Staff_registeration(base):
 #      __tablename__="Staff_registeration"
@@ -259,8 +259,8 @@ class staff_coordinator(base):
 
 #     # common for all the tables
 #      status = Column(String(255), nullable=False, index=True)
-#      created_at = Column(DateTime, server_default=func.now())
-#      updated_at = Column(DateTime, onupdate=func.now()) 
+#      created_at = Column(TIMESTAMP, server_default=func.now())
+#      updated_at = Column(TIMESTAMP, onupdate=func.now()) 
 
 
 class Login(base):
@@ -272,8 +272,8 @@ class Login(base):
 
      # common for all the tables
     status = Column(String(255), nullable=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())  
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, onupdate=func.now())  
 
 
 # Santhosh Page
@@ -290,8 +290,8 @@ class RoundCompletionData(base):
     
     # common for all the tables
     status = Column(String(255), nullable=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, onupdate=func.now())
 
 
 
@@ -305,8 +305,8 @@ class Addcompany(base):
 
     # common for all the tables
     status = Column(String(255), nullable=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())  
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, onupdate=func.now())  
 
 
 
@@ -320,11 +320,11 @@ class HRData(base):
     email=Column(String(255), nullable=False, index=True)
     phoneno=Column(String(255), nullable=False, index=True)
     core=Column(String(255), nullable=False, index=True)
-    Location=Column(String(255), nullable=False, index=True)
+
     # common for all the tables
     status = Column(String(255), nullable=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, onupdate=func.now())
 
 class Placementinfo(base):
     __tablename__="placementinfo"
@@ -349,8 +349,8 @@ class Placementinfo(base):
 
     # common for all the tables
     status = Column(String(255), nullable=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())  
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, onupdate=func.now())  
 
 
 class Getaccess(base):
@@ -366,8 +366,8 @@ class Getaccess(base):
 
     # common for all the tables
     status = Column(String(255), nullable=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, onupdate=func.now())
 
 class Accessedit(base):
     __tablename__="Accessedit"
@@ -385,8 +385,8 @@ class Accessedit(base):
 
     # common for all the tables
     status = Column(String(255), nullable=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, onupdate=func.now())
 
 
 class Placeddata(base):
@@ -401,6 +401,7 @@ class Placeddata(base):
     companyname=Column(String(255), nullable=False, index=True)
     modeofhiring=Column(String(255), nullable=False, index=True)
     package=Column(String(255), nullable=False, index=True)
+    type=Column(String(255), nullable=False, index=True)
     location=Column(String(255), nullable=False, index=True)
     declaration=Column(String(255), nullable=False, index=True)
     offerletter =Column(String(255), nullable=False, index=True)
@@ -411,7 +412,7 @@ class Placeddata(base):
     
     # common for all the tables
     status = Column(String(255), nullable=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, onupdate=func.now())
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    updated_at = Column(TIMESTAMP, onupdate=func.now())
 
 base.metadata.create_all(bind=db_engine)
